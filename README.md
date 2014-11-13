@@ -37,6 +37,7 @@ __get_gcp__
 Dumps out, in YAML, any GCPs a file might have. Useful for clipping rasters when the bounds of the raster are stored as GCP.
 
 __image_info__
+
 	Dumps out, in YAML, details about an image, including the amount of nodata, what the nodata value is, number of valid pixesl, projection, etc.
 Example:
 ```
