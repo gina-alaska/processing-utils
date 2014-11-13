@@ -1,1 +1,8 @@
 *.o
+bin/add_mask
+bin/get_gcp
+bin/image_info
+bin/masker
+bin/modis_natural_color_stretch
+bin/no_data_check
+bin/npp_natural_color_stretch
