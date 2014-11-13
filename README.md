@@ -8,9 +8,10 @@ basic structure (ruby gem style):
   * bin
     * add_overviews.rb 
       * adds overviews
+    * (etc,etc)
   * lib
       * shared stuff..
-  * config  _Each tool in bin has a config file, optionally_
+  * config  _(config files go here)_
     * none at the moment
 
 ###Notes
