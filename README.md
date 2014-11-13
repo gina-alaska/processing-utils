@@ -16,13 +16,13 @@ basic structure (ruby gem style):
 ###Notes
 ===========
 
-* add_mask
+add_mask
 
-** Add_overviews.rb 
+add_overviews.rb 
 
-*** Adds the "proper" number of overviews to a gdal file, in power of 2 divions, so a 120 by 120 image would get overviews at 2,4,8,16, and 32.  It should work on anything that gdal can add overviews to. 
-*** Example:
-*** t```
+Adds the "proper" number of overviews to a gdal file, in power of 2 divions, so a 120 by 120 image would get overviews at 2,4,8,16, and 32.  It should work on anything that gdal can add overviews to. 
+Example:
+```
 $ add_overviews.rb test.tif
 Runner running "gdaladdo -r average --config GDAL_CACHEMAX 500 test.tif  2  4  8  16  32 "
 0...10...20...30...40...50...60...70...80...90...100 - done.
