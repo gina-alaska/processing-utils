@@ -33,6 +33,7 @@ $ gdalinfo test.tif | grep Overview
 ```
 
 __get_gcp__
+
 Dumps out, in YAML, any GCPs a file might have. Useful for clipping rasters when the bounds of the raster are stored as GCP.
 
 __image_info__
@@ -62,23 +63,29 @@ bands:
 
 ```
 __masker__
+
 Masked off a file with a mask. 
 Use it like: masker <infile> <maskfile> <outfile> 
 Needis command line parsing that doesn't suck. 
 
 __modis_natural_color_stretch__
+
 Provides a useful modis natural color stretch. 
 
 __no_data_check__
+
 Generates a black and white image with nodata values highlighted - used to visually check that you don't have nodata values where you didn't expect them, and vice-versa. 
 
 __npp_natural_color_stretch__
+
 modis_natural_color_stretch for pytrol processed npp data.
 
 __tile_image.rb__
+
 Chops a large image up into tiles.
 ```
 tile_image.rb 
+
   This util chops an image into a number of tiles.
 
 Usage:
