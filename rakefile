@@ -9,8 +9,7 @@
     raise ("Your gdal version is pretty old (#{gdal_version}) - get a new one") if (gdal_version<"1.10.0")
   end
 
-  task :build_cc_stuff => [:add_mask, :masker,:no_data_check, :get_gcp, :modis_natural_color_stretch, :image_info, :
-npp_natural_color_stretch]
+  task :build_cc_stuff => [:add_mask, :masker,:no_data_check, :get_gcp, :modis_natural_color_stretch, :image_info, :npp_natural_color_stretch]
 
   task :add_mask do
     puts("Building \"add_mask\"")
@@ -39,8 +38,7 @@ npp_natural_color_stretch]
 
   task :modis_natural_color_stretch do
     puts("Building \":modis_natural_color_stretch\"")
-    system("gcc $(gdal-config --cflags) -o bin/modis_natural_color_stretch src/modis_natural_color_stretch.c $(gdal-config -
--libs)")
+    system("gcc $(gdal-config --cflags) -o bin/modis_natural_color_stretch src/modis_natural_color_stretch.c $(gdal-config --libs)")
   end
 
   task :image_info  do
@@ -49,7 +47,6 @@ npp_natural_color_stretch]
   end
 
   task :npp_natural_color_stretch do
-    system(" gcc -O3  $(gdal-config --cflags) -o bin/npp_natural_color_stretch src/npp_natural_color_stretch.c $(gdal-config
- --libs)")
+    system(" gcc -O3  $(gdal-config --cflags) -o bin/npp_natural_color_stretch src/npp_natural_color_stretch.c $(gdal-config --libs)")
   end
 
