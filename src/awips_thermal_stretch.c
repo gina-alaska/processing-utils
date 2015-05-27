@@ -16,6 +16,10 @@ void ussage ( ) {
         printf("\t\twhere:\n");
         printf("\t\t\t<infile> is a single banded floating point tif.  Can be single or double. \n");
         printf("\t\t\t<outfile> is the output file.  It will be deflate compressed, and tiled, with 0 as nodata.\n");
+        printf("\t\t\t(min) is the min value, not really the minimum, but the lower setting, see the link above.\n");
+        printf("\t\t\t(middle) is the middle value.\n");
+        printf("\t\t\t(max) is the max value, look at the code linked above to see what that means. AWIPS is stupid, don't blame me!\n");
+
         exit(-1);
 }
 
