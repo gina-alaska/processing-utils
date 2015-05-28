@@ -1,6 +1,13 @@
 #include "gdal.h"
 #include "cpl_string.h"
 #include "cpl_conv.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <string.h>
+#include <math.h>
+
+
 
 /************************************************************/
 /* update */
@@ -10,7 +17,7 @@
 /* print some usage information and quit..*/
 void ussage ( ) {
         printf("This tool is a simple util for stretching thermal data for awips.  Works in a strange manner, just a FWI.\n");
- 	printf(" (see https://github.com/Unidata/awips2/blob/master_14.4.1/edexOsgi/com.raytheon.uf.common.dataplugin.satellite/src/com/raytheon/uf/common/dataplugin/satellite/units/ir/IRTempToPixelConverter.java ) \n")
+ 	printf(" (see https://github.com/Unidata/awips2/blob/master_14.4.1/edexOsgi/com.raytheon.uf.common.dataplugin.satellite/src/com/raytheon/uf/common/dataplugin/satellite/units/ir/IRTempToPixelConverter.java ) \n");
         printf("Use it like:\n");
         printf("\tawips_thermal_stretch (--min min_level) (--max max_level ) (--middle middle_level ) <infile> <outfile>\n");
         printf("\t\twhere:\n");
@@ -29,8 +36,10 @@ void ussage ( ) {
 void parse_opts(int argc, char **argv, double *min, double *middle, double *max, char *infile, char *outfile)
 {
   int c;
-  *min=418.15;
-  *middle=238.15;
+
+  /* these are defaults.. */
+  *middle=418.15;
+  *min=238.15;
   *max=656.3;
 
   while (1)
@@ -142,41 +151,27 @@ GDALDatasetH GDAL_open_read(char *file_name)
 
 
 /* performs the stretch - first scales to 1.0 to 255, then does a piecewise color enhancement.*/
-char scale(double value, double min, double max) {
-	int i=0;
-	double x[6]={0.0, 30.0, 60.0, 120.0, 190.0, 255.0}; /*source */
-	double y[6]={0.0,110.0, 160.0, 210.0, 240.0, 255.0}; /*target*/
-	double b,m;
+char scale(double min, double middle, double max, double value) {
+	double result = 0.0;
+	
+	if (value < 0.0) {return 0;}
 
-	if ( value > MAX_MODIS) return 0;		/*nodata value*/
 
-	value = 1.0 +(254.0 + 0.9999)*(value - min)/(max - min);
-	
-	/*Find correct "bin"*/
-	while ( i < 4 && !(value >= x[i] && value <= x[i+1] )) { i++;};
+        if (value < min) {
+	    //printf("low:");
+            result = middle - value;
+        } else {
+	    //printf("high:");
+            result = max - (2.0 * value);
+        };
 
-	/* perform the mapping */
-	m = (y[i+1]-y[i])/(x[i+1] - x[i]);
-	b = y[i+1] - m*x[i+1];
-	value = (m * value + b);
+	//printf("(%g,%g,%g) => %g -> %g =>  (%g - (2.0*%g)  %g\n",min,middle,max, value, result, max, value, value*2.0);
 
-	/* double check values make sence.*/
-	if (value > 255 ) return 255;
-	return (char)value;
-	
-	
-/* Original IDL code this is modeled after : 
-  x1 = x[index]
-  x2 = x[index + 1]
-  y1 = y[index]
-  y2 = y[index + 1]
-  m = (y2 - y1) / float((x2 - x1))
-  b = y2 - (m * x2)
-  mask = (image ge x1) and (image lt x2)
-  scaled = scaled + mask * byte(m * image + b)
-*/
-	
-	
+        if ( result < 1.0) return 0;
+        if (result > 255.0) return 255;
+
+
+        return ( char ) round(result);
 }
 
 
@@ -188,30 +183,33 @@ int main( int argc, const char* argv[] )
     double        adfGeoTransform[6];
     GDALDatasetH  in_Dataset;
     GDALDatasetH  out_Dataset;
-    unsigned int    *data_scan_line;
+    double	    *data_scan_line;
     char 	    *out_scan_line;
     int             nBlockXSize, nBlockYSize;
     int             bGotMin, bGotMax;
     int             bands;
     int             xsize;
     double          adfMinMax[2];
+    char infile[2024], outfile[2024];   /*bad form.. */
+    double min, middle,max;
+
+
+    /* parse command line*/
+    parse_opts(argc, argv, &min,&middle,&max, infile, outfile);
+
     
     GDALAllRegister();
 
-
-    /* ussage..*/
-    if (argc != 3 ) ussage();
-    
     /* Set cache to something reasonable.. - 1/2 gig*/
-    CPLSetConfigOption( "GDAL_CACHEMAX", "512" );
+    CPLSetConfigOption( "GDAL_CACHEMAX", "2048" );
 
     /* open datasets..*/
-    in_Dataset = GDAL_open_read( argv[1]);
-    out_Dataset= make_me_a_sandwitch(&in_Dataset,argv[2]);
+    in_Dataset = GDAL_open_read( infile);
+    out_Dataset= make_me_a_sandwitch(&in_Dataset,outfile);
     
     /* Basic info on source dataset..*/
     GDALGetBlockSize(GDALGetRasterBand( in_Dataset, 1 ) , &nBlockXSize, &nBlockYSize );
-    printf( "Block=%dx%d Type=%s, ColorInterp=%s\n",
+    printf( "Info: Block=%dx%d Type=%s, ColorInterp=%s\n",
                 nBlockXSize, nBlockYSize,
                 GDALGetDataTypeName(GDALGetRasterDataType( GDALGetRasterBand( in_Dataset, 1 ))),
                 GDALGetColorInterpretationName(
@@ -219,55 +217,28 @@ int main( int argc, const char* argv[] )
     
     /* Loop though bands, scaling the data.. */
     xsize = GDALGetRasterXSize( in_Dataset );
-    data_scan_line = (unsigned int *) CPLMalloc(sizeof(unsigned int)*xsize);
+    data_scan_line = (double *) CPLMalloc(sizeof(double)*xsize);
     out_scan_line = (char *) CPLMalloc(sizeof(char)*xsize);
 
     for (bands=1; bands <= GDALGetRasterCount( in_Dataset ); bands ++ ) {
-        int x;
-	unsigned int min=9999999,max=0;	/* probibly a better way to set these..*/
-	double dmin,dmax;
+        int x, y_index;
         GDALRasterBandH data_band, out_band;
-        int y_index = 0;
         data_band =  GDALGetRasterBand( in_Dataset, bands);
         out_band =  GDALGetRasterBand( out_Dataset, bands);
 
 	/* Set nodata for that band*/
 	GDALSetRasterNoDataValue(out_band,0.0);
 
-	/*Find Min,Max, required for scaling*/
 	for (y_index = 0; y_index <GDALGetRasterYSize( in_Dataset ); y_index ++ ) {
             /* Read data..*/
-            GDALRasterIO( data_band, GF_Read, 0, y_index, xsize , 1, data_scan_line, xsize , 1,GDT_UInt32 , 0, 0 );
+            GDALRasterIO( data_band, GF_Read, 0, y_index, xsize , 1, data_scan_line, xsize , 1,GDT_Float64, 0, 0 );
 	    for(x=0; x < xsize; x++) { 
-			if ( data_scan_line[x] < MAX_MODIS ) {
-				if ( data_scan_line[x] > max ) max = data_scan_line[x];
-				else if ( data_scan_line[x] < min ) min = data_scan_line[x];
-			}
+		out_scan_line[x] = scale(min,middle,max, data_scan_line[x]); 
 		} 
-	}
-
-	dmax = (double)max;
-	dmin = (double)min;
-
-	printf("Info: For Band %d -> Min=%g,Max=%g\n", bands, dmin,dmax);
-
-        for (y_index = 0; y_index <GDALGetRasterYSize( in_Dataset ); y_index ++ ) {
-	    double scaled;
-
-            /* Read data..*/
-            GDALRasterIO( data_band, GF_Read, 0, y_index, xsize , 1, data_scan_line, xsize , 1,GDT_UInt32 , 0, 0 );
-
-	    /* scale each .. */
-            for(x=0; x < xsize; x++) {
-		out_scan_line[x] = scale(data_scan_line[x], dmin, dmax);
-            }
-            
-            /* now write out band..*/
             GDALRasterIO( out_band, GF_Write, 0, y_index, xsize , 1, out_scan_line, xsize , 1, GDT_Byte, 0, 0 );
-        }
+	}
         
     }
-    
     
     /* close file, and we are done.*/
     GDALClose(out_Dataset);
