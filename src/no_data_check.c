@@ -42,6 +42,7 @@ GDALDatasetH GDAL_open_read(char *file_name)
         printf("Hmm, could not open '%s' for reading.. this be an error, exiting..\n", file_name);
         exit(-1);
     }
+    return gdalDataset;
 }
 
 void ussage(char *progname)
