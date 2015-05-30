@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     if( hDataset != NULL )
     {
 	int a;
-	GDAL_GCP* gcp_list;
+	const GDAL_GCP* gcp_list;
  	OGRSpatialReferenceH 	gcp_hSRS, output_hSRS;
 	OGRCoordinateTransformationH	trans;
 	char * gcp_proj, *proj4_proj;

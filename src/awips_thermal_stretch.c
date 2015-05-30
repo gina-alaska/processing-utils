@@ -178,7 +178,7 @@ char scale(double min, double middle, double max, double value) {
 
 
 
-int main( int argc, const char* argv[] )
+int main( int argc, char* argv[] )
 {
     GDALDriverH   hDriver;
     double        adfGeoTransform[6];

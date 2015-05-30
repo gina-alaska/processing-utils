@@ -10,7 +10,7 @@
 /************************************************************/
 
 
-GDALDatasetH GDAL_open(char *file_name)
+GDALDatasetH GDAL_open(const char *file_name)
 {
     GDALDatasetH  gdalDataset;
     gdalDataset = GDALOpen( file_name, GA_Update );
@@ -23,7 +23,7 @@ GDALDatasetH GDAL_open(char *file_name)
 }
 
 
-int main( int argc, const char* argv[] )
+int main( int argc, const char ** argv )
 {
     GDALDriverH   hDriver;
     double        adfGeoTransform[6];

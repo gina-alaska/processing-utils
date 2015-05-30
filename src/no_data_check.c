@@ -14,7 +14,7 @@
 
 
 /* Makes a copy of a dataset, and opens it for writing.. */
-GDALDatasetH make_me_a_sandwitch(GDALDatasetH *in_dataset, char *filename)
+GDALDatasetH make_me_a_sandwitch(GDALDatasetH *in_dataset, const char *filename)
 {
     char **papszOptions = NULL;
     const char *pszFormat = "GTiff";
@@ -33,7 +33,7 @@ GDALDatasetH make_me_a_sandwitch(GDALDatasetH *in_dataset, char *filename)
         GDT_Byte, papszOptions );
 }
 
-GDALDatasetH GDAL_open_read(char *file_name)
+GDALDatasetH GDAL_open_read(const char *file_name)
 {
     GDALDatasetH  gdalDataset;
     gdalDataset = GDALOpen( file_name, GA_ReadOnly );
@@ -45,7 +45,7 @@ GDALDatasetH GDAL_open_read(char *file_name)
     return gdalDataset;
 }
 
-void ussage(char *progname)
+void ussage(const char *progname)
 {
     fprintf(stderr, "Whooowww.. I don't work like that..");
     fprintf(stderr, "use me like:\n");
