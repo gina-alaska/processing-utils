@@ -1,7 +1,7 @@
 processing-utils
 ================
 
-a collection of processing tools, mainly for processing raster data
+A collection of processing tools, mainly for processing raster data at [UAF-GINA](http://gina.alaska.edu).  These tools are free for others to use under the MIT license. 
 
 basic structure (ruby gem style):
 * processing-utils
@@ -104,4 +104,8 @@ where [options] is:
             --help, -h:   Show this message
 ```
 
+### Authors & Contributors
+
+* Jay Cable - Primary author
+* Dayne Broderson - minor tweaks and encouragement
 
