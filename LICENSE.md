@@ -1,6 +1,7 @@
 The MIT License (MIT)
 
-Copyright (c) {{{year}}} {{{fullname}}}
+Copyright (c) 2017 Jay Cable and contributors
+University of Alaska Fairbanks - Geographic Information Network of Alaska
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
