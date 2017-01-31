@@ -233,5 +233,7 @@ main (int argc, char *argv[])
 
   /* close file, and we are done. */
   GDALClose (out_Dataset);
-
+  
+  /* exit gracefully with a 0 */
+  return 0;
 }
