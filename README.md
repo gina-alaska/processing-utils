@@ -14,7 +14,7 @@ basic structure (ruby gem style):
   * config  _(config files go here)_
     * none at the moment
 
-###Notes
+Notes
 ===========
 
 __add_mask__
