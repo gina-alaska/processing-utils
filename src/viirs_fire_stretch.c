@@ -28,7 +28,7 @@ ussage ()
     printf
     ("\t\t\t(blue-cap) is how much to stretch the blue - try 1.0 or 0.75 .\n");
 
-    abort ();
+    exit(-1);
 }
 
 
@@ -182,7 +182,7 @@ GDAL_open_read (char *file_name)
         printf
         ("Hmm, could not open '%s' for reading.. this be an error, exiting..\n",
          file_name);
-        abort ();
+        exit(-1);
     }
     return gdalDataset;
 }
