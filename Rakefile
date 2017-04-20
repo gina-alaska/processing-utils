@@ -14,7 +14,7 @@
     raise ("Your gdal version is pretty old (#{gdal_version}) - get a new one") if (gdal_version<"1.10.0")
   end
 
-  task :build_cc_stuff => [:add_mask, :masker,:no_data_check, :get_gcp, :modis_natural_color_stretch, :image_info, :npp_natural_color_stretch, :awips_thermal_stretch, :awips_vis_stretch, :sqrt_stretch] 
+  task :build_cc_stuff => [:add_mask, :masker,:no_data_check, :get_gcp, :modis_natural_color_stretch, :image_info, :npp_natural_color_stretch, :awips_thermal_stretch, :awips_vis_stretch, :sqrt_stretch, :viirs_fire_stretch] 
 
   task :add_mask do
     puts("Building \"add_mask\"")
@@ -64,6 +64,10 @@
 
   task :sqrt_stretch do
     system(" gcc -O3  $(gdal-config --cflags) -o bin/sqrt_stretch src/sqrt_stretch.c $(gdal-config --libs) -lm")
+  end
+
+  task :viirs_fire_stretch do 
+    system(" gcc -O3  $(gdal-config --cflags) -o bin/viirs_fire_stretch src/viirs_fire_stretch.c $(gdal-config --libs) -lm")
   end
 
 
