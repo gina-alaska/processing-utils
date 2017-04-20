@@ -21,7 +21,7 @@ ussage ()
     printf ("This tool is a simple util for making fire color images. \n");
     printf ("Use it like:\n");
     printf
-    ("\tviirs_fire_stretch (--red red_file) (--green green_file ) (--blue blue_file ) (--blue-cap 0.75)  <outfile>\n");
+    ("\tviirs_fire_stretch (--red red_file) (--green green_file ) (--blue blue_file ) (--blue-cap 0.75) --jpeg <outfile>\n");
     printf ("\t\twhere:\n");
     printf
     ("\t\t\t<outfile> is the output file.  It will be deflate compressed, and tiled, with 0 as nodata.\n");
@@ -70,7 +70,7 @@ blue = i1 reflectance
 /* command line parsing..*/
 void
 parse_opts (int argc, char **argv, char *red, char *blue, char *green,
-            double *blue_cap, char *outfile)
+            double *blue_cap, int *jpeg, char *outfile)
 {
     int c;
 
@@ -84,12 +84,13 @@ parse_opts (int argc, char **argv, char *red, char *blue, char *green,
             {"green", required_argument, 0, 'g'},
             {"blue", required_argument, 0, 'b'},
             {"blue-cap", required_argument, 0, 'c'},
+            {"jpeg", no_argument, 0, 'j'},
             {0, 0, 0, 0}
         };
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "hr:g:b:c:?", long_options, &option_index);
+        c = getopt_long (argc, argv, "hr:g:b:c:j?", long_options, &option_index);
 
         /* Detect the end of the options. */
         if (c == -1)
@@ -111,6 +112,9 @@ parse_opts (int argc, char **argv, char *red, char *blue, char *green,
             break;
         case 'c':
             *blue_cap = atof (optarg);
+            break;
+        case 'j':
+            *jpeg = 1;
             break;
         case '?':
             /* getopt_long already printed an error message. */
@@ -141,7 +145,7 @@ parse_opts (int argc, char **argv, char *red, char *blue, char *green,
 
 /* Makes a copy of a dataset, and opens it for writing.. */
 GDALDatasetH
-make_me_a_sandwitch (GDALDatasetH * in_dataset, char *copy_file_name)
+create_output_dateset (GDALDatasetH * in_dataset, char *copy_file_name, int jpeg)
 {
     char **papszOptions = NULL;
     const char *pszFormat = "GTiff";
@@ -149,11 +153,21 @@ make_me_a_sandwitch (GDALDatasetH * in_dataset, char *copy_file_name)
     GDALDriverH hDriver;
     GDALDatasetH out_gdalfile;
     hDriver = GDALGetDriverByName (pszFormat);
+
     papszOptions = CSLSetNameValue (papszOptions, "TILED", "YES");
-    papszOptions = CSLSetNameValue (papszOptions, "COMPRESS", "DEFLATE");
+
+    if (jpeg)  {
+        papszOptions = CSLSetNameValue (papszOptions, "COMPRESS", "JPEG");
+        papszOptions = CSLSetNameValue (papszOptions, "PHOTOMETRIC","YCBCR");
+    }
+    else {
+        papszOptions = CSLSetNameValue (papszOptions, "COMPRESS", "DEFLATE");
+    }
 
     /*Perhaps controversal - default to bigtiff... */
     papszOptions = CSLSetNameValue (papszOptions, "BIGTIFF", "YES");
+
+
 
     /*return GDALCreateCopy( hDriver, copy_file_name, *in_dataset, FALSE, papszOptions, NULL, NULL ); */
     out_gdalfile = GDALCreate (hDriver, copy_file_name,
@@ -256,13 +270,14 @@ main (int argc, char *argv[])
     int bGotMin, bGotMax;
     int bands;
     int xsize;
+    int jpeg=0;
     double blue_cap;
     char red[2024], green[2024], blue[2024], outfile[2024];	/*bad form.. */
     double min, middle, max;
 
 
     /* parse command line */
-    parse_opts (argc, argv, red, blue, green, &blue_cap, outfile);
+    parse_opts (argc, argv, red, blue, green, &blue_cap, &jpeg,outfile);
 
 
     GDALAllRegister ();
@@ -275,7 +290,7 @@ main (int argc, char *argv[])
     in_Datasets[1] = GDAL_open_read (green);
     in_Datasets[2] = GDAL_open_read (blue);
 
-    out_Dataset = make_me_a_sandwitch (in_Datasets, outfile);
+    out_Dataset = create_output_dateset(in_Datasets, outfile,jpeg);
 
     /* Basic info on source dataset.. */
     GDALGetBlockSize (GDALGetRasterBand (in_Datasets[0], 1), &nBlockXSize,
