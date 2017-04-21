@@ -16,7 +16,7 @@
 
 /* print some usage information and quit..*/
 void
-ussage ()
+usage ()
 {
     printf ("This tool is a simple util for making fire color images. \n");
     printf ("Use it like:\n");
@@ -99,7 +99,7 @@ parse_opts (int argc, char **argv, char *red, char *blue, char *green,
         switch (c)
         {
         case 'h':
-            ussage ();
+            usage ();
             break;
         case 'r':
             strcpy (red, optarg);
@@ -121,7 +121,7 @@ parse_opts (int argc, char **argv, char *red, char *blue, char *green,
             break;
 
         default:
-            ussage ();
+            usage ();
         }
     }
 
@@ -132,7 +132,7 @@ parse_opts (int argc, char **argv, char *red, char *blue, char *green,
     }
     else
     {
-        ussage ();
+        usage ();
     }
 
     printf ("Info:  outfile=%s red=%s, green=%s, blue = %s\n",

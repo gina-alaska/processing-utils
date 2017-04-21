@@ -104,6 +104,15 @@ where [options] is:
             --help, -h:   Show this message
 ```
 
+__viirs_fire_stretch.o__
+
+Tool for making fire color images.  Use it like:
+
+```      
+viirs_fire_stretch --red <red_file> --green <green_file> --blue <blue_file> [--blue-cap 0.75] --jpeg <outfile>
+```
+
+
 ### Authors & Contributors
 
 * Jay Cable - Primary author
