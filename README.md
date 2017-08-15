@@ -118,3 +118,5 @@ viirs_fire_stretch --red <red_file> --green <green_file> --blue <blue_file> [--b
 * Jay Cable - Primary author
 * Dayne Broderson - minor tweaks and encouragement
 
+Note: Deploy V1
+
