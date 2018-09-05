@@ -21,7 +21,7 @@ usage ()
     printf ("This tool is a simple util for making fire color images. \n");
     printf ("Use it like:\n");
     printf
-    ("\tviirs_fire_stretch (--red red_file) (--green green_file ) (--blue blue_file ) (--blue-cap 0.75) --jpeg <outfile>\n");
+    ("\tviirs_fire_stretch (--red red_file) (--green green_file ) (--blue blue_file ) (--blue-cap 0.75) --jpeg --m13 m13_file <outfile>\n");
     printf ("\t\twhere:\n");
     printf
     ("\t\t\t<outfile> is the output file.  It will be deflate compressed, and tiled, with 0 as nodata.\n");
@@ -70,7 +70,7 @@ blue = i1 reflectance
 /* command line parsing..*/
 void
 parse_opts (int argc, char **argv, char *red, char *blue, char *green,
-            double *blue_cap, int *jpeg, char *outfile)
+            double *blue_cap, int *jpeg, int *m13, char *m13_path, char *outfile)
 {
     int c;
 
@@ -83,6 +83,7 @@ parse_opts (int argc, char **argv, char *red, char *blue, char *green,
             {"red", required_argument, 0, 'r'},
             {"green", required_argument, 0, 'g'},
             {"blue", required_argument, 0, 'b'},
+	    {"m13", required_argument, 0, 'm'},
             {"blue-cap", required_argument, 0, 'c'},
             {"jpeg", no_argument, 0, 'j'},
             {0, 0, 0, 0}
@@ -109,6 +110,11 @@ parse_opts (int argc, char **argv, char *red, char *blue, char *green,
             break;
         case 'b':
             strcpy (blue, optarg);
+            break;
+        case 'm':
+	    puts("INFO: M13 filling of red/I04 enabled.\n");
+            strcpy (m13_path, optarg);
+	    *m13 = 1;
             break;
         case 'c':
             *blue_cap = atof (optarg);
@@ -262,23 +268,23 @@ main (int argc, char *argv[])
 {
     GDALDriverH hDriver;
     double adfGeoTransform[6];
-    GDALDatasetH in_Datasets[3];
+    GDALDatasetH in_Datasets[4];
     GDALDatasetH out_Dataset;
-    double *data_scan_line;
+    double *data_scan_line, *m13_scan_line;
     char *out_scan_line;
     int nBlockXSize, nBlockYSize;
     int bGotMin, bGotMax;
     int bands;
     int xsize;
     int jpeg=0;
+    int m13=0;
     double blue_cap;
-    char red[2024], green[2024], blue[2024], outfile[2024];	/*bad form.. */
+    char red[2024], green[2024], blue[2024], m13_path[2014], outfile[2024];	/*bad form.. */
     double min, middle, max;
 
 
     /* parse command line */
-    parse_opts (argc, argv, red, blue, green, &blue_cap, &jpeg,outfile);
-
+    parse_opts (argc, argv, red, blue, green, &blue_cap, &jpeg,&m13,m13_path,outfile);
 
     GDALAllRegister ();
 
@@ -289,6 +295,7 @@ main (int argc, char *argv[])
     in_Datasets[0] = GDAL_open_read (red);
     in_Datasets[1] = GDAL_open_read (green);
     in_Datasets[2] = GDAL_open_read (blue);
+    if (m13 != 0 )  { in_Datasets[3] = GDAL_open_read (m13_path); } 
 
     out_Dataset = create_output_dateset(in_Datasets, outfile,jpeg);
 
@@ -306,16 +313,19 @@ main (int argc, char *argv[])
     /* Loop though bands, scaling the data.. */
     xsize = GDALGetRasterXSize (in_Datasets[0]);
     data_scan_line = (double *) CPLMalloc (sizeof (double) * xsize);
+    if (m13 != 0 ) { m13_scan_line = (double *) CPLMalloc (sizeof (double) * xsize); }
     out_scan_line = (char *) CPLMalloc (sizeof (char) * xsize);
 
     for (bands = 1; bands <= 3; bands++)
     {
         int x, y_index;
-        GDALRasterBandH data_band, out_band;
+        GDALRasterBandH data_band, m13_band,out_band;
 
         printf ("Info: Processing band #%d\n", bands);
         data_band = GDALGetRasterBand (in_Datasets[bands - 1], 1);
         out_band = GDALGetRasterBand (out_Dataset, bands);
+
+	if (bands == 1 && m13 != 0 ) { m13_band = GDALGetRasterBand (in_Datasets[3], 1);};
 
         /* Set nodata for that band */
         GDALSetRasterNoDataValue (out_band, 0.0);
@@ -325,10 +335,23 @@ main (int argc, char *argv[])
             /* Read data.. */
             GDALRasterIO (data_band, GF_Read, 0, y_index, xsize, 1,
                           data_scan_line, xsize, 1, GDT_Float64, 0, 0);
+	    if (bands == 1 && m13 != 0 ) { 
+		GDALRasterIO (m13_band, GF_Read, 0, y_index, xsize, 1,
+                          m13_scan_line, xsize, 1, GDT_Float64, 0, 0);
+	    }
             for (x = 0; x < xsize; x++)
             {
                 if (bands == 1)
                 {
+
+		    /* Check to see if red is really cold, and m13 warmer than saturation point for m13.  If so, set red to satueration point. */
+		    if (m13 != 0 ) {
+			if (m13_scan_line[x] > 367.0 && data_scan_line[x] < 273.0 )
+			     {
+				printf("INFO: Clipping %d/%d from %g to %g\n", x,y_index,m13_scan_line[x],data_scan_line[x]);
+				data_scan_line[x] = 367.0;
+			     }
+			}
                     data_scan_line[x] = scale_k (data_scan_line[x]);
                 };
                 if (bands == 3)
