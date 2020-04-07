@@ -20,7 +20,7 @@ usage ()
     printf ("This tool is a simple util for making viirs night time microphsyics. \n");
     printf ("Use it like:\n");
     printf
-    ("\tnight_time_micro (--12um 12um_file) (--11um 11um_file ) (--3_74um 3_74um_file ) <outfile> \n");
+    ("\tnight_time_micro (--12um|red 12um_file) (--11um|green 11um_file ) (--3_74um|blue 3_74um_file ) <outfile> \n");
     printf ("\t\twhere:\n");
     printf
     ("\t\t\t<outfile> is the output file.  It will be deflate compressed, and tiled, with 0 as nodata.\n");
@@ -63,6 +63,9 @@ parse_opts (int argc, char **argv, char *i3_75, char *i11, char *m12, char *outf
             {"12um", required_argument, 0, 'a'},
             {"11um", required_argument, 0, 'c'},
             {"3_74um", required_argument, 0, 'd'},
+            {"red", required_argument, 0, 'e'},
+            {"green", required_argument, 0, 'f'},
+            {"blue", required_argument, 0, 'g'},
             {0, 0, 0, 0}
         };
         /* getopt_long stores the option index here. */
@@ -80,12 +83,15 @@ parse_opts (int argc, char **argv, char *i3_75, char *i11, char *m12, char *outf
             usage ();
             break;
         case 'a':
+        case 'e':
             strcpy (m12, optarg);
             break;
         case 'c':
+	case 'f':
             strcpy (i11, optarg);
             break;
         case 'd':
+	case 'g':
 	    strcpy (i3_75, optarg);
             break;
         case '?':
