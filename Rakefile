@@ -71,6 +71,7 @@
   end
 
   task :night_microphysics do
+    puts("Building \"night_microphysics\"")
     system("gcc -O3  $(gdal-config --cflags) -o bin/night_microphysics src/night_microphysics.c  $(gdal-config --libs) -lm")
   end
 
