@@ -71,7 +71,7 @@ parse_opts (int argc, char **argv, char *i3_75, char *i11, char *m12, char *outf
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        c = getopt_long (argc, argv, "ha:c:d:?", long_options, &option_index);
+        c = getopt_long (argc, argv, "ha:c:d:e:f:g:?", long_options, &option_index);
 
         /* Detect the end of the options. */
         if (c == -1)
