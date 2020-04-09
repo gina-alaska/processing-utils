@@ -14,7 +14,7 @@
     raise ("Your gdal version is pretty old (#{gdal_version}) - get a new one") if (gdal_version<"1.10.0")
   end
 
-  task :build_cc_stuff => [:add_mask, :masker,:no_data_check, :get_gcp, :modis_natural_color_stretch, :image_info, :npp_natural_color_stretch, :awips_thermal_stretch, :awips_vis_stretch, :sqrt_stretch, :viirs_fire_stretch, :night_microphysics] 
+  task :build_cc_stuff => [:add_mask, :masker,:no_data_check, :get_gcp, :modis_natural_color_stretch, :image_info, :npp_natural_color_stretch, :awips_thermal_stretch, :awips_vis_stretch, :sqrt_stretch, :viirs_fire_stretch, :night_microphysics, :snow_melt] 
 
   task :add_mask do
     puts("Building \"add_mask\"")
@@ -73,6 +73,11 @@
   task :night_microphysics do
     puts("Building \"night_microphysics\"")
     system("gcc -O3  $(gdal-config --cflags) -o bin/night_microphysics src/night_microphysics.c  $(gdal-config --libs) -lm")
+  end
+
+  task :snow_melt do
+    puts("Building \"snow_melt\"")
+    system("gcc -O3  $(gdal-config --cflags) -o bin/snow_melt src/snow_melt.c  $(gdal-config --libs) -lm")
   end
 
 
