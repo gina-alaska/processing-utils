@@ -5,10 +5,12 @@
       <rasterTransparency/>
       <rastershader>
         <colorrampshader colorRampType="INTERPOLATED" clip="0">
-          <item alpha="255" value="260" label="-13 C" color="#03c0ff"/>
-          <item alpha="255" value="273.2" label="0" color="#fbff01"/>
-          <item alpha="255" value="285.2" label="12" color="#f7ba00"/>
-          <item alpha="255" value="300" label="27" color="#ff011e"/>
+<item alpha="255" value="269.26111111111106" label="25" color="#E1E1E1"/>
+<item alpha="255" value="272.0388888888889" label="30" color="#AAAAAA"/>
+<item alpha="255" value="276.4833333333333" label="38" color="#A04BB4"/>
+<item alpha="255" value="280.3722222222222" label="45" color="#6487D2"/>
+<item alpha="255" value="283.15" label="50" color="#00FFFF"/>
+<item alpha="255" value="288.7055555555555" label="60" color="#0000FF"/>
         </colorrampshader>
       </rastershader>
     </rasterrenderer>
