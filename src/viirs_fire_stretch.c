@@ -240,7 +240,7 @@ double
 scale_k (double k)
 {
     double result = 0.0;
-    if (k == 0.0)
+    if (k == 0.0 || isnan (k))
     {
         return 0.0;
     }
@@ -266,11 +266,13 @@ main (int argc, char *argv[])
     GDALDatasetH out_Dataset;
     double *data_scan_line;
     char *out_scan_line;
+    char *out_scan_line_cleanup1, *out_scan_line_cleanup2, *out_scan_line_cleanup3;
     int nBlockXSize, nBlockYSize;
     int bGotMin, bGotMax;
     int bands;
     int xsize;
     int jpeg=0;
+    int x, y_index;
     double blue_cap;
     char red[2024], green[2024], blue[2024], outfile[2024];	/*bad form.. */
     double min, middle, max;
@@ -310,7 +312,6 @@ main (int argc, char *argv[])
 
     for (bands = 1; bands <= 3; bands++)
     {
-        int x, y_index;
         GDALRasterBandH data_band, out_band;
 
         printf ("Info: Processing band #%d\n", bands);
@@ -333,11 +334,11 @@ main (int argc, char *argv[])
                 };
                 if (bands == 3)
                 {
-                    out_scan_line[x] = scale (0.0, blue_cap, data_scan_line[x]);
+                    out_scan_line[x] = scale (0.0000001, blue_cap, data_scan_line[x]);
                 }
                 else
                 {
-                    out_scan_line[x] = scale (0.0, 1.0, data_scan_line[x]);
+                    out_scan_line[x] = scale (0.0000001, 1.0, data_scan_line[x]);
                 };
             }
             GDALRasterIO (out_band, GF_Write, 0, y_index, xsize, 1,
@@ -346,6 +347,40 @@ main (int argc, char *argv[])
 
     }
 
+    /* loop back though to cleanup nodata values.. */
+
+   printf ("Info: Cleaning up nodata.. \n");
+
+   out_scan_line_cleanup1 = (char *) CPLMalloc (sizeof (char) * xsize);
+   out_scan_line_cleanup2 = (char *) CPLMalloc (sizeof (char) * xsize);
+   out_scan_line_cleanup3 = (char *) CPLMalloc (sizeof (char) * xsize);
+   for (y_index = 0; y_index < GDALGetRasterYSize (out_Dataset); y_index++)
+        {
+            /* Read data.. */
+            GDALRasterIO (GDALGetRasterBand(out_Dataset,1), GF_Read, 0, y_index, xsize, 1,
+                          out_scan_line_cleanup1, xsize, 1, GDT_Byte, 0, 0);
+            GDALRasterIO (GDALGetRasterBand(out_Dataset,2), GF_Read, 0, y_index, xsize, 1,
+                          out_scan_line_cleanup2, xsize, 1, GDT_Byte, 0, 0);
+            GDALRasterIO (GDALGetRasterBand(out_Dataset,3), GF_Read, 0, y_index, xsize, 1,
+                          out_scan_line_cleanup3, xsize, 1, GDT_Byte, 0, 0);
+            for (x = 0; x < xsize; x++)
+            {
+		if (out_scan_line_cleanup1[x] == 0 || out_scan_line_cleanup2[x] == 0 ||  out_scan_line_cleanup3[x] == 0) {
+			out_scan_line_cleanup1[x] = 0; 
+			out_scan_line_cleanup2[x] = 0;
+			out_scan_line_cleanup3[x] = 0;
+  	        }
+            }
+            GDALRasterIO (GDALGetRasterBand(out_Dataset,1), GF_Write, 0, y_index, xsize, 1,
+                          out_scan_line_cleanup1, xsize, 1, GDT_Byte, 0, 0);
+            GDALRasterIO (GDALGetRasterBand(out_Dataset,2), GF_Write, 0, y_index, xsize, 1,
+                          out_scan_line_cleanup2, xsize, 1, GDT_Byte, 0, 0);
+            GDALRasterIO (GDALGetRasterBand(out_Dataset,3), GF_Write, 0, y_index, xsize, 1,
+                          out_scan_line_cleanup3, xsize, 1, GDT_Byte, 0, 0);
+
+        }
+
+    printf ("Info: Done. \n");
     /* close file, and we are done. */
     GDALClose (out_Dataset);
 
