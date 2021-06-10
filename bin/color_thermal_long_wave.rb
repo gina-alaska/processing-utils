@@ -43,3 +43,4 @@ end
 output_file =ARGV.first
 gdal_options = ["-co", "COMPRESS=LZW","-co",  "TILED=YES"]
 runner(["gdaldem","color-relief",*gdal_options, opts[:red], opts[:colormap], output_file], opts)
+runner(["gdal_edit.py", "-a_nodata", "0",  output_file], opts)
