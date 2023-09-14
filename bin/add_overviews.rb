@@ -3,6 +3,7 @@ require "rubygems"
 require "yaml"
 require 'getoptlong'
 require "pp"
+require "json"
 
 
 def runner ( s )
@@ -21,7 +22,9 @@ end
 
 
 def get_geo_info (path)
-  return YAML.load(`gdal_list_corners #{path}`)  
+  #return YAML.load(`gdal_list_corners #{path}`)  
+  info = JSON.parse(`gdalinfo -json #{path}`)
+  return { "width" => info["size"][0], "height" => info["size"][1]}
 end
 
 ##
