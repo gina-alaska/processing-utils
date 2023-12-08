@@ -44,4 +44,5 @@ colormap = "#{File.dirname(__FILE__)}/../config/" + opts[:colormap]
 
 output_file =ARGV.first
 gdal_options = ["-co", "COMPRESS=LZW","-co",  "TILED=YES"]
+runner(["gdal_edit.py","-a_nodata","nan", opts[:red]], opts)
 runner(["gdaldem","color-relief",*gdal_options, opts[:red], colormap, output_file], opts)
